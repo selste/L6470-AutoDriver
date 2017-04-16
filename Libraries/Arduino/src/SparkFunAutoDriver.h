@@ -52,7 +52,6 @@ class AutoDriver {
     void setHoldKVAL(byte kvalInput);
 
     boolean getLoSpdOpt();
-    // getSyncPin
     byte getStepMode();
     float getMaxSpeed();
     float getMinSpeed();

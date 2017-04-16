@@ -9,30 +9,26 @@
 //  250ns (datasheet value)- 0x08A on boot.
 // Multiply desired steps/s/s by .137438 to get an appropriate value for this register.
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
-unsigned long AutoDriver::accCalc(float stepsPerSecPerSec)
-{
+unsigned long AutoDriver::accCalc(float stepsPerSecPerSec) {
   float temp = stepsPerSecPerSec * 0.137438;
-  if( (unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
+  if ((unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
   else return (unsigned long) long(temp);
 }
 
 
-float AutoDriver::accParse(unsigned long stepsPerSecPerSec)
-{
+float AutoDriver::accParse(unsigned long stepsPerSecPerSec) {
     return (float) (stepsPerSecPerSec & 0x00000FFF) / 0.137438;
 }
 
 // The calculation for DEC is the same as for ACC. Value is 0x08A on boot.
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
-unsigned long AutoDriver::decCalc(float stepsPerSecPerSec)
-{
+unsigned long AutoDriver::decCalc(float stepsPerSecPerSec) {
   float temp = stepsPerSecPerSec * 0.137438;
-  if( (unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
+  if ((unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
   else return (unsigned long) long(temp);
 }
 
-float AutoDriver::decParse(unsigned long stepsPerSecPerSec)
-{
+float AutoDriver::decParse(unsigned long stepsPerSecPerSec) {
     return (float) (stepsPerSecPerSec & 0x00000FFF) / 0.137438;
 }
 
@@ -40,16 +36,14 @@ float AutoDriver::decParse(unsigned long stepsPerSecPerSec)
 //  250ns (datasheet value)- 0x041 on boot.
 // Multiply desired steps/s by .065536 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure it remains at or below 0x3FF
-unsigned long AutoDriver::maxSpdCalc(float stepsPerSec)
-{
+unsigned long AutoDriver::maxSpdCalc(float stepsPerSec) {
   unsigned long temp = ceil(stepsPerSec * .065536);
-  if( temp > 0x000003FF) return 0x000003FF;
+  if (temp > 0x000003FF) return 0x000003FF;
   else return temp;
 }
 
 
-float AutoDriver::maxSpdParse(unsigned long stepsPerSec)
-{
+float AutoDriver::maxSpdParse(unsigned long stepsPerSec) {
     return (float) (stepsPerSec & 0x000003FF) / 0.065536;
 }
 
@@ -57,15 +51,13 @@ float AutoDriver::maxSpdParse(unsigned long stepsPerSec)
 //  250ns (datasheet value)- 0x000 on boot.
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
-unsigned long AutoDriver::minSpdCalc(float stepsPerSec)
-{
+unsigned long AutoDriver::minSpdCalc(float stepsPerSec) {
   float temp = stepsPerSec / 0.238;
-  if( (unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
+  if ((unsigned long) long(temp) > 0x00000FFF) return 0x00000FFF;
   else return (unsigned long) long(temp);
 }
 
-float AutoDriver::minSpdParse(unsigned long stepsPerSec)
-{
+float AutoDriver::minSpdParse(unsigned long stepsPerSec) {
     return (float) ((stepsPerSec & 0x00000FFF) * 0.238);
 }
 
@@ -73,15 +65,13 @@ float AutoDriver::minSpdParse(unsigned long stepsPerSec)
 //  250ns (datasheet value)- 0x027 on boot.
 // Multiply desired steps/s by .065536 and subtract .5 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure the value is at or below 0x3FF.
-unsigned long AutoDriver::FSCalc(float stepsPerSec)
-{
+unsigned long AutoDriver::FSCalc(float stepsPerSec) {
   float temp = (stepsPerSec * .065536)-.5;
-  if( (unsigned long) long(temp) > 0x000003FF) return 0x000003FF;
+  if ((unsigned long) long(temp) > 0x000003FF) return 0x000003FF;
   else return (unsigned long) long(temp);
 }
 
-float AutoDriver::FSParse(unsigned long stepsPerSec)
-{
+float AutoDriver::FSParse(unsigned long stepsPerSec) {
     return (((float) (stepsPerSec & 0x000003FF)) + 0.5) / 0.065536;
 }
 
@@ -89,15 +79,13 @@ float AutoDriver::FSParse(unsigned long stepsPerSec)
 //  250ns (datasheet value)- 0x408 on boot.
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 14-bit value, so we need to make sure the value is at or below 0x3FFF.
-unsigned long AutoDriver::intSpdCalc(float stepsPerSec)
-{
+unsigned long AutoDriver::intSpdCalc(float stepsPerSec) {
   float temp = stepsPerSec * 4.1943;
-  if( (unsigned long) long(temp) > 0x00003FFF) return 0x00003FFF;
+  if ((unsigned long) long(temp) > 0x00003FFF) return 0x00003FFF;
   else return (unsigned long) long(temp);
 }
 
-float AutoDriver::intSpdParse(unsigned long stepsPerSec)
-{
+float AutoDriver::intSpdParse(unsigned long stepsPerSec) {
     return (float) (stepsPerSec & 0x00003FFF) / 4.1943;
 }
 
@@ -105,23 +93,20 @@ float AutoDriver::intSpdParse(unsigned long stepsPerSec)
 //  250ns (datasheet value).
 // Multiply desired steps/s by 67.106 to get an appropriate value for this register
 // This is a 20-bit value, so we need to make sure the value is at or below 0xFFFFF.
-unsigned long AutoDriver::spdCalc(float stepsPerSec)
-{
+unsigned long AutoDriver::spdCalc(float stepsPerSec) {
   unsigned long temp = stepsPerSec * 67.106;
-  if( temp > 0x000FFFFF) return 0x000FFFFF;
+  if (temp > 0x000FFFFF) return 0x000FFFFF;
   else return temp;
 }
 
-float AutoDriver::spdParse(unsigned long stepsPerSec)
-{
+float AutoDriver::spdParse(unsigned long stepsPerSec) {
     return (float) (stepsPerSec & 0x000FFFFF) / 67.106;
 }
 
 // Much of the functionality between "get parameter" and "set parameter" is
 //  very similar, so we deal with that by putting all of it in one function
 //  here to save memory space and simplify the program.
-long AutoDriver::paramHandler(byte param, unsigned long value)
-{
+long AutoDriver::paramHandler(byte param, unsigned long value) {
   long retVal = 0;   // This is a temp for the value to return.
 
   // This switch structure handles the appropriate action for each register.
@@ -130,8 +115,7 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
   //  bits and do the right number of transfers. That is handled by the xferParam()
   //  function, in most cases, but for 1-byte or smaller transfers, we call
   //  SPIXfer() directly.
-  switch (param)
-  {
+  switch (param) {
     // ABS_POS is the current absolute offset from home. It is a 22 bit number expressed
     //  in two's complement. At power up, this value is 0. It cannot be written when
     //  the motor is running, but at any other time, it can be updated to change the
@@ -289,17 +273,14 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
 // Generalization of the subsections of the register read/write functionality.
 //  We want the end user to just write the value without worrying about length,
 //  so we pass a bit length parameter from the calling function.
-long AutoDriver::xferParam(unsigned long value, byte bitLen)
-{
+long AutoDriver::xferParam(unsigned long value, byte bitLen) {
   byte byteLen = bitLen/8;      // How many BYTES do we have?
   if (bitLen%8 > 0) byteLen++;  // Make sure not to lose any partial byte values.
 
   byte temp;
-
   unsigned long retVal = 0;
 
-  for (int i = 0; i < byteLen; i++)
-  {
+  for (int i=0; i<byteLen; i++) {
     retVal = retVal << 8;
     temp = SPIXfer((byte)(value>>((byteLen-i-1)*8)));
     retVal |= temp;
@@ -309,17 +290,14 @@ long AutoDriver::xferParam(unsigned long value, byte bitLen)
   return retVal & mask;
 }
 
-byte AutoDriver::SPIXfer(byte data)
-{
+byte AutoDriver::SPIXfer(byte data) {
   byte dataPacket[_numBoards];
-  int i;
-  for (i=0; i < _numBoards; i++)
-  {
+  for (int i=0; i<_numBoards; i++) {
     dataPacket[i] = 0;
   }
   dataPacket[_position] = data;
   digitalWrite(_CSPin, LOW);
-  // _SPI->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  // Settings for the L6470: 4MHz, MSBFIRST, SPI_MODE3
   _SPI->beginTransaction(SPISettings(_clock, _bitOrder, _dataMode));
   _SPI->transfer(dataPacket, _numBoards);
   _SPI->endTransaction();

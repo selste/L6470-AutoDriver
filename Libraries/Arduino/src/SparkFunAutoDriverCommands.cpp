@@ -5,8 +5,7 @@
 
 // Realize the "set parameter" function, to write to the various registers in
 //  the dSPIN chip.
-void AutoDriver::setParam(byte param, unsigned long value) 
-{
+void AutoDriver::setParam(byte param, unsigned long value) {
   param |= SET_PARAM;
   SPIXfer((byte)param);
   paramHandler(param, value);
@@ -14,8 +13,7 @@ void AutoDriver::setParam(byte param, unsigned long value)
 
 // Realize the "get parameter" function, to read from the various registers in
 //  the dSPIN chip.
-long AutoDriver::getParam(byte param)
-{
+long AutoDriver::getParam(byte param) {
   SPIXfer(param | GET_PARAM);
   return paramHandler(param, 0);
 }
@@ -24,10 +22,9 @@ long AutoDriver::getParam(byte param)
 //  indicating the number of steps the motor has traveled from the HOME
 //  position. HOME is defined by zeroing this register, and it is zero on
 //  startup.
-long AutoDriver::getPos()
-{
+long AutoDriver::getPos() {
   long temp = getParam(ABS_POS);
-  
+
   // Since ABS_POS is a 22-bit 2's comp value, we need to check bit 21 and, if
   //  it's set, set all the bits ABOVE 21 in order for the value to maintain
   //  its appropriate sign.
@@ -36,10 +33,9 @@ long AutoDriver::getPos()
 }
 
 // Just like getPos(), but for MARK.
-long AutoDriver::getMark()
-{
+long AutoDriver::getMark() {
   long temp = getParam(MARK);
-  
+
   // Since ABS_POS is a 22-bit 2's comp value, we need to check bit 21 and, if
   //  it's set, set all the bits ABOVE 21 in order for the value to maintain
   //  its appropriate sign.
@@ -53,24 +49,22 @@ long AutoDriver::getMark()
 //  will switch the device into full-step mode.
 // The spdCalc() function is provided to convert steps/s values into
 //  appropriate integer values for this function.
-void AutoDriver::run(byte dir, float stepsPerSec)
-{
+void AutoDriver::run(byte dir, float stepsPerSec) {
   SPIXfer(RUN | dir);
   unsigned long integerSpeed = spdCalc(stepsPerSec);
   if (integerSpeed > 0xFFFFF) integerSpeed = 0xFFFFF;
-  
+
   // Now we need to push this value out to the dSPIN. The 32-bit value is
   //  stored in memory in little-endian format, but the dSPIN expects a
   //  big-endian output, so we need to reverse the byte-order of the
   //  data as we're sending it out. Note that only 3 of the 4 bytes are
   //  valid here.
-  
+
   // We begin by pointing bytePointer at the first byte in integerSpeed.
   byte* bytePointer = (byte*)&integerSpeed;
   // Next, we'll iterate through a for loop, indexing across the bytes in
   //  integerSpeed starting with byte 2 and ending with byte 0.
-  for (int8_t i = 2; i >= 0; i--)
-  {
+  for (int8_t i=2; i>=0; i--) {
     SPIXfer(bytePointer[i]);
   }
 }
@@ -80,8 +74,7 @@ void AutoDriver::run(byte dir, float stepsPerSec)
 //  the direction (set by the FWD and REV constants) imposed by the call
 //  of this function. Motion commands (RUN, MOVE, etc) will cause the device
 //  to exit step clocking mode.
-void AutoDriver::stepClock(byte dir)
-{
+void AutoDriver::stepClock(byte dir) {
   SPIXfer(STEP_CLOCK | dir);
 }
 
@@ -89,14 +82,12 @@ void AutoDriver::stepClock(byte dir)
 //  direction imposed by dir (FWD or REV constants may be used). The motor
 //  will accelerate according the acceleration and deceleration curves, and
 //  will run at MAX_SPEED. Stepping mode will adhere to FS_SPD value, as well.
-void AutoDriver::move(byte dir, unsigned long numSteps)
-{
+void AutoDriver::move(byte dir, unsigned long numSteps) {
   SPIXfer(MOVE | dir);
   if (numSteps > 0x3FFFFF) numSteps = 0x3FFFFF;
   // See run() for an explanation of what's going on here.
   byte* bytePointer = (byte*)&numSteps;
-  for (int8_t i = 2; i >= 0; i--)
-  {
+  for (int8_t i=2; i>=0; i--) {
     SPIXfer(bytePointer[i]);
   }
 }
@@ -104,27 +95,23 @@ void AutoDriver::move(byte dir, unsigned long numSteps)
 // GOTO operates much like MOVE, except it produces absolute motion instead
 //  of relative motion. The motor will be moved to the indicated position
 //  in the shortest possible fashion.
-void AutoDriver::goTo(long pos)
-{
+void AutoDriver::goTo(long pos) {
   SPIXfer(GOTO);
   if (pos > 0x3FFFFF) pos = 0x3FFFFF;
   // See run() for an explanation of what's going on here.
   byte* bytePointer = (byte*)&pos;
-  for (int8_t i = 2; i >= 0; i--)
-  {
+  for (int8_t i=2; i>=0; i--) {
     SPIXfer(bytePointer[i]);
   }
 }
 
 // Same as GOTO, but with user constrained rotational direction.
-void AutoDriver::goToDir(byte dir, long pos)
-{
+void AutoDriver::goToDir(byte dir, long pos) {
   SPIXfer(GOTO_DIR | dir);
   if (pos > 0x3FFFFF) pos = 0x3FFFFF;
   // See run() for an explanation of what's going on here.
   byte* bytePointer = (byte*)&pos;
-  for (int8_t i = 2; i >= 0; i--)
-  {
+  for (int8_t i=2; i>=0; i--) {
     SPIXfer(bytePointer[i]);
   }
 }
@@ -135,15 +122,13 @@ void AutoDriver::goToDir(byte dir, long pos)
 //  performed at the falling edge, and depending on the value of
 //  act (either RESET or COPY) the value in the ABS_POS register is
 //  either RESET to 0 or COPY-ed into the MARK register.
-void AutoDriver::goUntil(byte action, byte dir, float stepsPerSec)
-{
+void AutoDriver::goUntil(byte action, byte dir, float stepsPerSec) {
   SPIXfer(GO_UNTIL | action | dir);
   unsigned long integerSpeed = spdCalc(stepsPerSec);
   if (integerSpeed > 0x3FFFFF) integerSpeed = 0x3FFFFF;
   // See run() for an explanation of what's going on here.
   byte* bytePointer = (byte*)&integerSpeed;
-  for (int8_t i = 2; i >= 0; i--)
-  {
+  for (int8_t i=2; i>=0; i--) {
     SPIXfer(bytePointer[i]);
   }
 }
@@ -155,82 +140,70 @@ void AutoDriver::goUntil(byte action, byte dir, float stepsPerSec)
 //  and the ABS_POS register is either COPY-ed into MARK or RESET to
 //  0, depending on whether RESET or COPY was passed to the function
 //  for act.
-void AutoDriver::releaseSw(byte action, byte dir)
-{
+void AutoDriver::releaseSw(byte action, byte dir) {
   SPIXfer(RELEASE_SW | action | dir);
 }
 
 // GoHome is equivalent to GoTo(0), but requires less time to send.
 //  Note that no direction is provided; motion occurs through shortest
 //  path. If a direction is required, use GoTo_DIR().
-void AutoDriver::goHome()
-{
+void AutoDriver::goHome() {
   SPIXfer(GO_HOME);
 }
 
 // GoMark is equivalent to GoTo(MARK), but requires less time to send.
 //  Note that no direction is provided; motion occurs through shortest
 //  path. If a direction is required, use GoTo_DIR().
-void AutoDriver::goMark()
-{
+void AutoDriver::goMark() {
   SPIXfer(GO_MARK);
 }
 
 // setMark() and setHome() allow the user to define new MARK or
 //  ABS_POS values.
-void AutoDriver::setMark(long newMark)
-{
+void AutoDriver::setMark(long newMark) {
   setParam(MARK, newMark);
 }
 
-void AutoDriver::setPos(long newPos)
-{
+void AutoDriver::setPos(long newPos) {
   setParam(ABS_POS, newPos);
 }
 
 // Sets the ABS_POS register to 0, effectively declaring the current
 //  position to be "HOME".
-void AutoDriver::resetPos()
-{
+void AutoDriver::resetPos() {
   SPIXfer(RESET_POS);
 }
 
 // Reset device to power up conditions. Equivalent to toggling the STBY
 //  pin or cycling power.
-void AutoDriver::resetDev()
-{
+void AutoDriver::resetDev() {
   SPIXfer(RESET_DEVICE);
 }
-  
+
 // Bring the motor to a halt using the deceleration curve.
-void AutoDriver::softStop()
-{
+void AutoDriver::softStop() {
   SPIXfer(SOFT_STOP);
 }
 
 // Stop the motor with infinite deceleration.
-void AutoDriver::hardStop()
-{
+void AutoDriver::hardStop() {
   SPIXfer(HARD_STOP);
 }
 
 // Decelerate the motor and put the bridges in Hi-Z state.
-void AutoDriver::softHiZ()
-{
+void AutoDriver::softHiZ() {
   SPIXfer(SOFT_HIZ);
 }
 
 // Put the bridges in Hi-Z state immediately with no deceleration.
-void AutoDriver::hardHiZ()
-{
+void AutoDriver::hardHiZ() {
   SPIXfer(HARD_HIZ);
 }
 
 // Fetch and return the 16-bit value in the STATUS register. Resets
 //  any warning flags and exits any error states. Using GetParam()
 //  to read STATUS does not clear these values.
-int AutoDriver::getStatus()
-{
+int AutoDriver::getStatus() {
   int temp = 0;
   byte* bytePointer = (byte*)&temp;
   SPIXfer(GET_STATUS);
