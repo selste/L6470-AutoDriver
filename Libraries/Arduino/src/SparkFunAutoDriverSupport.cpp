@@ -1,11 +1,11 @@
 #include "SparkFunAutoDriver.h"
 #include <SPI.h>
 
-// AutoDriverSupport.cpp - Contains utility functions for converting real-world 
+// AutoDriverSupport.cpp - Contains utility functions for converting real-world
 //  units (eg, steps/s) to values usable by the dsPIN controller. These are all
 //  private members of class AutoDriver.
 
-// The value in the ACC register is [(steps/s/s)*(tick^2)]/(2^-40) where tick is 
+// The value in the ACC register is [(steps/s/s)*(tick^2)]/(2^-40) where tick is
 //  250ns (datasheet value)- 0x08A on boot.
 // Multiply desired steps/s/s by .137438 to get an appropriate value for this register.
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
@@ -36,7 +36,7 @@ float AutoDriver::decParse(unsigned long stepsPerSecPerSec)
     return (float) (stepsPerSecPerSec & 0x00000FFF) / 0.137438;
 }
 
-// The value in the MAX_SPD register is [(steps/s)*(tick)]/(2^-18) where tick is 
+// The value in the MAX_SPD register is [(steps/s)*(tick)]/(2^-18) where tick is
 //  250ns (datasheet value)- 0x041 on boot.
 // Multiply desired steps/s by .065536 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure it remains at or below 0x3FF
@@ -53,7 +53,7 @@ float AutoDriver::maxSpdParse(unsigned long stepsPerSec)
     return (float) (stepsPerSec & 0x000003FF) / 0.065536;
 }
 
-// The value in the MIN_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is 
+// The value in the MIN_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is
 //  250ns (datasheet value)- 0x000 on boot.
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 12-bit value, so we need to make sure the value is at or below 0xFFF.
@@ -69,7 +69,7 @@ float AutoDriver::minSpdParse(unsigned long stepsPerSec)
     return (float) ((stepsPerSec & 0x00000FFF) * 0.238);
 }
 
-// The value in the FS_SPD register is ([(steps/s)*(tick)]/(2^-18))-0.5 where tick is 
+// The value in the FS_SPD register is ([(steps/s)*(tick)]/(2^-18))-0.5 where tick is
 //  250ns (datasheet value)- 0x027 on boot.
 // Multiply desired steps/s by .065536 and subtract .5 to get an appropriate value for this register
 // This is a 10-bit value, so we need to make sure the value is at or below 0x3FF.
@@ -85,7 +85,7 @@ float AutoDriver::FSParse(unsigned long stepsPerSec)
     return (((float) (stepsPerSec & 0x000003FF)) + 0.5) / 0.065536;
 }
 
-// The value in the INT_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is 
+// The value in the INT_SPD register is [(steps/s)*(tick)]/(2^-24) where tick is
 //  250ns (datasheet value)- 0x408 on boot.
 // Multiply desired steps/s by 4.1943 to get an appropriate value for this register
 // This is a 14-bit value, so we need to make sure the value is at or below 0x3FFF.
@@ -101,7 +101,7 @@ float AutoDriver::intSpdParse(unsigned long stepsPerSec)
     return (float) (stepsPerSec & 0x00003FFF) / 4.1943;
 }
 
-// When issuing RUN command, the 20-bit speed is [(steps/s)*(tick)]/(2^-28) where tick is 
+// When issuing RUN command, the 20-bit speed is [(steps/s)*(tick)]/(2^-28) where tick is
 //  250ns (datasheet value).
 // Multiply desired steps/s by 67.106 to get an appropriate value for this register
 // This is a 20-bit value, so we need to make sure the value is at or below 0xFFFFF.
@@ -123,7 +123,7 @@ float AutoDriver::spdParse(unsigned long stepsPerSec)
 long AutoDriver::paramHandler(byte param, unsigned long value)
 {
   long retVal = 0;   // This is a temp for the value to return.
-  
+
   // This switch structure handles the appropriate action for each register.
   //  This is necessary since not all registers are of the same length, either
   //  bit-wise or byte-wise, so we want to make sure we mask out any spurious
@@ -149,21 +149,21 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     case MARK:
       retVal = xferParam(value, 22);
       break;
-    // SPEED contains information about the current speed. It is read-only. It does 
+    // SPEED contains information about the current speed. It is read-only. It does
     //  NOT provide direction information.
     case SPEED:
       retVal = xferParam(0, 20);
-      break; 
-    // ACC and DEC set the acceleration and deceleration rates. Set ACC to 0xFFF 
+      break;
+    // ACC and DEC set the acceleration and deceleration rates. Set ACC to 0xFFF
     //  to get infinite acceleration/decelaeration- there is no way to get infinite
     //  deceleration w/o infinite acceleration (except the HARD STOP command).
     //  Cannot be written while motor is running. Both default to 0x08A on power up.
     // AccCalc() and DecCalc() functions exist to convert steps/s/s values into
     //  12-bit values for these two registers.
-    case ACC: 
+    case ACC:
       retVal = xferParam(value, 12);
       break;
-    case DECEL: 
+    case DECEL:
       retVal = xferParam(value, 12);
       break;
     // MAX_SPEED is just what it says- any command which attempts to set the speed
@@ -180,7 +180,7 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     //  set to zero. This value is 0 on startup.
     // MinSpdCalc() function exists to convert steps/s value into a 12-bit value for this
     //  register. SetLSPDOpt() function exists to enable/disable the optimization feature.
-    case MIN_SPEED: 
+    case MIN_SPEED:
       retVal = xferParam(value, 13);
       break;
     // FS_SPD register contains a threshold value above which microstepping is disabled
@@ -214,18 +214,18 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     case INT_SPD:
       retVal = xferParam(value, 14);
       break;
-    case ST_SLP: 
+    case ST_SLP:
       retVal = xferParam(value, 8);
       break;
-    case FN_SLP_ACC: 
+    case FN_SLP_ACC:
       retVal = xferParam(value, 8);
       break;
-    case FN_SLP_DEC: 
+    case FN_SLP_DEC:
       retVal = xferParam(value, 8);
       break;
     // K_THERM is motor winding thermal drift compensation. Please see the datasheet
     //  for full details on operation- the default value should be okay for most users.
-    case K_THERM: 
+    case K_THERM:
       value &= 0x0F;
       retVal = xferParam(value, 8);
       break;
@@ -237,13 +237,13 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     // Set the overcurrent threshold. Ranges from 375mA to 6A in steps of 375mA.
     //  A set of defined constants is provided for the user's convenience. Default
     //  value is 3.375A- 0x08. This is a 4-bit value.
-    case OCD_TH: 
+    case OCD_TH:
       value &= 0x0F;
       retVal = xferParam(value, 8);
       break;
     // Stall current threshold. Defaults to 0x40, or 2.03A. Value is from 31.25mA to
     //  4A in 31.25mA steps. This is a 7-bit value.
-    case STALL_TH: 
+    case STALL_TH:
       value &= 0x7F;
       retVal = xferParam(value, 8);
       break;
@@ -261,7 +261,7 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     // ALARM_EN controls which alarms will cause the FLAG pin to fall. A set of constants
     //  is provided to make this easy to interpret. By default, ALL alarms will trigger the
     //  FLAG pin.
-    case ALARM_EN: 
+    case ALARM_EN:
       retVal = xferParam(value, 8);
       break;
     // CONFIG contains some assorted configuration bits and fields. A fairly comprehensive
@@ -269,7 +269,7 @@ long AutoDriver::paramHandler(byte param, unsigned long value)
     //  to the datasheet before modifying the contents of this register to be certain they
     //  understand the implications of their modifications. Value on boot is 0x2E88; this
     //  can be a useful way to verify proper start up and operation of the dSPIN chip.
-    case CONFIG: 
+    case CONFIG:
       retVal = xferParam(value, 16);
       break;
     // STATUS contains read-only information about the current condition of the chip. A
@@ -293,10 +293,10 @@ long AutoDriver::xferParam(unsigned long value, byte bitLen)
 {
   byte byteLen = bitLen/8;      // How many BYTES do we have?
   if (bitLen%8 > 0) byteLen++;  // Make sure not to lose any partial byte values.
-  
+
   byte temp;
 
-  unsigned long retVal = 0; 
+  unsigned long retVal = 0;
 
   for (int i = 0; i < byteLen; i++)
   {
@@ -319,10 +319,10 @@ byte AutoDriver::SPIXfer(byte data)
   }
   dataPacket[_position] = data;
   digitalWrite(_CSPin, LOW);
-  _SPI->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  // _SPI->beginTransaction(SPISettings(4000000, MSBFIRST, SPI_MODE3));
+  _SPI->beginTransaction(SPISettings(_clock, _bitOrder, _dataMode));
   _SPI->transfer(dataPacket, _numBoards);
   _SPI->endTransaction();
   digitalWrite(_CSPin, HIGH);
   return dataPacket[_position];
 }
-

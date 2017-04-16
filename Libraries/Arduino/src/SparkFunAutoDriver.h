@@ -1,12 +1,11 @@
 #ifndef AutoDriver_h
 #define AutoDriver_h
 
-#include "Arduino.h"
+#include <Arduino.h>
 #include <SPI.h>
 #include "SparkFundSPINConstants.h"
 
-class AutoDriver
-{
+class AutoDriver {
   public:
     // Constructors. We'll ALWAYS want a CS pin and a reset pin, but we may
     //  not want a busy pin. By using two constructors, we make it easy to
@@ -15,19 +14,21 @@ class AutoDriver
     AutoDriver(int position, int CSPin, int resetPin);
 
     void SPIPortConnect(SPIClass *SPIPort);
-    
+
+    void overrideSPISettings(uint32_t clock, uint8_t bitOrder, uint8_t dataMode);
+
     // These are super-common things to do: checking if the device is busy,
     //  and checking the status of the device. We make a couple of functions
     //  for that.
     int busyCheck();
     int getStatus();
-    
+
     // Some users will want to do things other than what we explicitly provide
     //  nice functions for; give them unrestricted access to the parameter
     //  registers.
     void setParam(byte param, unsigned long value);
     long getParam(byte param);
-    
+
     // Lots of people just want Commands That Work; let's provide them!
     // Start with some configuration commands
     void setLoSpdOpt(boolean enable);
@@ -70,7 +71,7 @@ class AutoDriver
     byte getDecKVAL();
     byte getRunKVAL();
     byte getHoldKVAL();
-    
+
     // ...and now, operational commands.
     long getPos();
     long getMark();
@@ -91,13 +92,13 @@ class AutoDriver
     void hardStop();
     void softHiZ();
     void hardHiZ();
-    
-    
+
+
   private:
     byte SPIXfer(byte data);
     long xferParam(unsigned long value, byte bitLen);
     long paramHandler(byte param, unsigned long value);
-    
+
     // Support functions for converting from user units to L6470 units
     unsigned long accCalc(float stepsPerSecPerSec);
     unsigned long decCalc(float stepsPerSecPerSec);
@@ -115,13 +116,18 @@ class AutoDriver
     float FSParse(unsigned long stepsPerSec);
     float intSpdParse(unsigned long stepsPerSec);
     float spdParse(unsigned long stepsPerSec);
- 
+
     int _CSPin;
     int _resetPin;
     int _busyPin;
     int _position;
     static int _numBoards;
     SPIClass *_SPI;
+
+    // SPISettings
+    uint32_t _clock;
+    uint8_t _bitOrder;
+    uint8_t _dataMode;
 };
 
 // User constants for public functions.
@@ -147,7 +153,7 @@ class AutoDriver
 
 // configSyncPin() options: the !BUSY/SYNC pin can be configured to be low when
 //  the chip is executing a command, *or* to output a pulse on each full step
-//  clock (with some divisor). These 
+//  clock (with some divisor). These
 #define BUSY_PIN   0x00     // !BUSY/SYNC pin set to !BUSY mode
 #define SYNC_PIN   0x80     // pin set to SYNC mode
 
@@ -224,7 +230,7 @@ class AutoDriver
 #define SW_USER                 0x0010 // Tie to the GoUntil and ReleaseSW
                                        //  commands to provide jog function.
                                        //  See page 25 of datasheet.
-                                                   
+
 // Clock functionality
 #define INT_16MHZ               0x0000 // Internal 16MHz, no output
 #define INT_16MHZ_OSCOUT_2MHZ   0x0008 // Default; internal 16MHz, 2MHz output
@@ -238,6 +244,5 @@ class AutoDriver
 #define EXT_8MHZ_OSCOUT_INVERT  0x000C // External 8MHz crystal, output inverted
 #define EXT_16MHZ_OSCOUT_INVERT 0x000D // External 16MHz crystal, output inverted
 #define EXT_24MHZ_OSCOUT_INVERT 0x000E // External 24MHz crystal, output inverted
-#define EXT_32MHZ_OSCOUT_INVERT 0x000F // External 32MHz crystal, output inverted 
+#define EXT_32MHZ_OSCOUT_INVERT 0x000F // External 32MHz crystal, output inverted
 #endif
-
