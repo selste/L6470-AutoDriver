@@ -1,6 +1,6 @@
 #include <SparkFunAutoDriver.h>
 #include <SPI.h>
-#include "SparkFunnotes.h"
+#include "SparkFunNotes.h"
 
 // Test sketch for the L6470 AutoDriver library. This program instantiates one
 //  AutoDriver board and uses it to play Jonathon Coulton's "Want You Gone" from
